@@ -8,7 +8,7 @@ class RotaryPositionalEmbedding(torch.nn.Module):
         half = d_k // 2
         
         k = torch.arange(half, device=device, dtype=torch.float32)
-        inv_freq = theta ** (-2 * k / d_k)
+        inv_freq = theta ** (-2 * k / d_k) # k is 0-index, therefore is -2k instead of -2k+2
         pos = torch.arange(max_seq_len, device=device, dtype=torch.float32)
         ang = pos[:, None] * inv_freq[None, :]
         cos = torch.cos(ang)

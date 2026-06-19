@@ -2,16 +2,12 @@ import torch
 
 def cross_entropy(logits, target):
     '''
-    logit: [N, C], target: [N]
+    logit: [N, V], target: [N]
     '''
-    # Since the range of softmax(logit, dim=-1) is [0, 1], log(0) is -inf which is underflow.
-    # Therefore, this naive method is not numerical stable. 
-    # loss = -torch.log(softmax(logit, dim=-1))[torch.arange(logit.shape[0]), target]
-    # return loss.mean()
-    
-    # Using log_sum_exp skill    
-    m = logits.max(dim=-1, keepdim=True).values
-    lse = m + torch.log(torch.sum(torch.exp(logits - m), dim=-1, keepdim=True))
-    log_probs = logits - lse
-    loss = -log_probs[torch.arange(logits.size(0)), target]
+    # Using log_sum_exp skill
+    N = logits.size(0) # token数，可以是被flatten之后的batch_size * seq_len
+    M = logits.max(dim=-1, keepdim=True).values # [N, 1]
+    lse = M + torch.log(torch.sum(torch.exp(logits - M), dim=-1, keepdim=True))
+    log_probs = logits - lse # [N, V]
+    loss = -log_probs[torch.arange(N), target] # 这行相当于loss = torch.empty(N); for i in range(N): loss[i] = -log_probs[i, target[i]]
     return loss.mean()
